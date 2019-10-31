@@ -25,27 +25,17 @@ w_decay    = 1e-5
 step_size  = 50
 use_gpu = True
 
-BATCH_SIZE=512 #大概需要2G的显存
-EPOCHS=20 # 总共训练批次
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") # 让torch判断是否使用GPU，建议使用GPU环境，因为会快很多
+lip_train = LIPSegDataset(True, img_transforms)
+lip_val = LIPSegDataset(False, img_transforms)
 
+train_data = DataLoader(lip_train, 1, shuffle=True, num_workers=8)
+val_data = DataLoader(lip_val, 1,  num_workers=8)
 
-def cross_entropy2d(input, target, weight=None, size_average=True):
-    # input: (n, c, h, w), target: (n, h, w)
-    n, c, h, w = input.size()
-    # log_p: (n, c, h, w)
-    log_p = F.log_softmax(input, dim=1)
-    # log_p: (n*h*w, c)
-    log_p = log_p.transpose(1, 2).transpose(2, 3).contiguous()
-    log_p = log_p[target.view(n, h, w, 1).repeat(1, 1, 1, c) >= 0]
-    log_p = log_p.view(-1, c)
-    # target: (n*h*w,)
-    mask = target >= 0
-    target = target[mask]
-    loss = F.nll_loss(log_p, target, weight=weight, reduction='sum')
-    if size_average:
-        loss /= mask.data.sum()
-    return loss
+net = MyFCN(20)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+if torch.cuda.device_count() > 1:
+    net = nn.DataParallel(net,device_ids=[0])
+net.to(device)
 
 criterion = cross_entropy2d
 optimizer = optim.RMSprop(net.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)

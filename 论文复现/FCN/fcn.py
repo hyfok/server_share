@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import datasets, transforms, models
 
 def convrelu(in_channels, out_channels, kernel, padding, stride=1):
     return nn.Sequential(
