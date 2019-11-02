@@ -72,10 +72,10 @@ class LIPSegDataset(Dataset):
         self.transforms = transforms
         data_list, label_list = read_images(train=train)
         self.data_list = data_list
-        self.data_list = self._filter(self.data_list)
+       # self.data_list = self._filter(self.data_list)
         self.label_list = label_list
-        self.label_list = self._filter(self.label_list)
-        _filter
+       # self.label_list = self._filter(self.label_list)
+        
         print('Read ' + str(len(self.data_list)) + ' images')
         
     def _filter(self, images): # 过滤掉图片大小小于 crop 大小的图片
